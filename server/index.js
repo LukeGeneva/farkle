@@ -1,20 +1,19 @@
 const io = require('socket.io')();
-
-let sockets = [];
+const lobby = require('./lobby');
 
 io.on('connection', socket => {
   socket.on('disconnect', () => {
     const { username } = socket;
     console.log(`${username} left`);
-    io.emit('lobby', sockets.map(sock => sock.username));
-    sockets = sockets.filter(sock => sock !== socket);
+    lobby.removeUser(username);
+    io.emit('lobby', lobby.getUsers());
   });
 
   socket.on('join', username => {
     console.log(`${username} joined!`);
     socket.username = username;
-    sockets.push(socket);
-    io.emit('lobby', sockets.map(sock => sock.username));
+    lobby.addUser(username);
+    io.emit('lobby', lobby.getUsers());
   });
 });
 
